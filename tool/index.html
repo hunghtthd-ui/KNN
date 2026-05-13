@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electrical Engineering Tools Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .tool-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .image-shimmer {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .option-btn:active { transform: scale(0.98); }
+        .option-selected { border-color: #2563eb; background-color: #eff6ff; box-shadow: 0 0 0 2px #3b82f633; }
+        @keyframes bounce-subtle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .animate-bounce-subtle { animation: bounce-subtle 2s infinite; }
+        
+        .custom-shadow { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+    <div id="game-container" class="w-full max-w-2xl bg-white rounded-3xl custom-shadow overflow-hidden border border-slate-100">
+        <!-- Header Section -->
+        <div class="bg-slate-900 p-6 text-white flex justify-between items-center">
+            <div>
+                <h1 class="text-xl font-bold tracking-tight">Electrical Tool Master</h1>
+                <p id="progress-text" class="text-xs text-slate-400 font-medium">Question 1 of 15</p>
+            </div>
+            <div class="flex gap-4 text-sm font-semibold">
+                <div class="flex items-center bg-emerald-500/10 px-3 py-1 rounded-full text-emerald-400">
+                    <i class="fas fa-check-circle mr-1.5"></i> <span id="stat-correct">0</span>
+                </div>
+                <div class="flex items-center bg-rose-500/10 px-3 py-1 rounded-full text-rose-400">
+                    <i class="fas fa-times-circle mr-1.5"></i> <span id="stat-wrong">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Indicator -->
+        <div class="w-full bg-slate-100 h-1.5">
+            <div id="progress-bar" class="bg-blue-600 h-full transition-all duration-700 ease-out" style="width: 0%"></div>
+        </div>
+
+        <!-- Quiz Interface -->
+        <div id="quiz-screen" class="p-6 md:p-10">
+            <!-- Tool Image Display -->
+            <div class="flex flex-col items-center mb-8">
+                <div class="relative w-full max-w-sm aspect-square bg-slate-50 rounded-2xl flex items-center justify-center mb-6 border border-slate-100 overflow-hidden shadow-inner group">
+                    <div id="image-loader" class="absolute inset-0 image-shimmer"></div>
+                    <img id="tool-image" src="" alt="Electrical Tool" class="relative z-10 w-4/5 h-4/5 object-contain opacity-0 transition-all duration-500 group-hover:scale-105" onload="this.style.opacity='1'; document.getElementById('image-loader').style.display='none'">
+                </div>
+                <h2 class="text-slate-800 text-lg font-bold">Identify this tool</h2>
+            </div>
+
+            <!-- Options Grid -->
+            <div id="options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                <!-- Buttons dynamically generated -->
+            </div>
+
+            <!-- Interaction Controls -->
+            <div class="flex flex-col items-center space-y-4">
+                <button id="confirm-btn" onclick="handleConfirm()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold text-lg shadow-lg hover:bg-blue-700 disabled:opacity-30 disabled:grayscale transition-all transform active:scale-[0.97]">
+                    Confirm Selection <span class="hidden md:inline-block ml-2 text-xs font-normal opacity-50 underline">Enter</span>
+                </button>
+                
+                <div id="feedback-message" class="h-6 text-sm font-semibold text-center transition-all"></div>
+                
+                <button id="next-btn" onclick="nextQuestion()" class="hidden w-full py-4 bg-emerald-600 text-white rounded-2xl font-bold text-lg shadow-lg hover:bg-emerald-700 animate-bounce-subtle flex items-center justify-center">
+                    Next Question <i class="fas fa-arrow-right ml-2 text-sm"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Final Score Screen -->
+        <div id="result-screen" class="hidden p-12 text-center">
+            <div class="mb-8">
+                <div class="w-24 h-24 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-trophy text-4xl text-yellow-500"></i>
+                </div>
+                <h2 class="text-3xl font-black text-slate-800 mb-2">Quiz Finished!</h2>
+                <p class="text-slate-500 font-medium">Excellent effort today.</p>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 mb-10">
+                <div class="bg-emerald-50 p-6 rounded-2xl border border-emerald-100">
+                    <p class="text-xs uppercase text-emerald-600 font-bold mb-1 tracking-wider">Correct</p>
+                    <p id="final-correct" class="text-4xl font-black text-emerald-700">0</p>
+                </div>
+                <div class="bg-rose-50 p-6 rounded-2xl border border-rose-100">
+                    <p class="text-xs uppercase text-rose-600 font-bold mb-1 tracking-wider">Incorrect</p>
+                    <p id="final-wrong" class="text-4xl font-black text-rose-700">0</p>
+                </div>
+            </div>
+
+            <button onclick="location.reload()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl">
+                Restart Practice
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const ALL_TOOLS = [
+            { name: "Wrench", img: "https://boxousa.com/cdn/shop/files/BoxoUSA-12-13mm-Metric-12-Point-Flexible-Socket-Wrench-WR1722-1213.webp?v=1728742242?auto=format&fit=crop&q=80&w=600" },
+            { name: "Adjustable wrench", img: "https://m.media-amazon.com/images/I/61SOSLs9ntL.jpg?auto=format&fit=crop&q=80&w=600" },
+            { name: "Phillips screwdriver", img: "https://sg.element14.com/productimages/large/en_US/5267179.jpg?auto=format&fit=crop&q=80&w=600" },
+            { name: "Flathead screwdriver", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTW4MU62vOQpx_uhwRIA3SoRFV3bet_MPuRHA&s?auto=format&fit=crop&q=80&w=600" },
+            { name: "Torque wrench", img: "https://mechanicalbooster.com/wp-content/uploads/2024/04/what-is-a-torque-Wrench.jpg?auto=format&fit=crop&q=80&w=600" },
+            { name: "Socket set", img: "https://www.powerbuilt.com/cdn/shop/files/240120-01_1800x.jpg?v=1770978338?auto=format&fit=crop&q=80&w=600" },
+            { name: "Allen wrench", img: "https://itgresa.com/wp-content/uploads/2019/09/Hex-wrench-600.jpeg?auto=format&fit=crop&q=80&w=600" },
+            { name: "Cordless drill", img: "https://res.cloudinary.com/rsc/image/upload/b_rgb:FFFFFF,c_pad,dpr_2.0,f_auto,h_300,q_auto,w_600/c_pad,h_300,w_600/F7072835-03?auto=format&fit=crop&q=80&w=600" },
+            { name: "Tape measure", img: "https://vn.element14.com/productimages/large/en_GB/1696684-40.jpg?auto=format&fit=crop&q=80&w=600" },
+            { name: "Wire stripper", img: "https://www.qoltec.com/files/en/product/gallery/main-image-65a8e8dc09593.jpg" },
+            { name: "Hammer", img: "https://www.estwing.com/wp-content/uploads/2026/03/prod_surestrike_nail_hammers_MRW16C_01_2000x2000.png?auto=format&fit=crop&q=80&w=600" },
+            { name: "Magnetic nut setter", img: "https://eldoradotools.com/cdn/shop/files/nutsetters_efb784d2-e568-48a7-a4d9-064bf8780780.jpg?v=1764795705" },
+            { name: "Spirit level", img: "https://www.delitoolsglobal.com/uploads/file/20241008/14/edl290300-spirit-level.webp?auto=format&fit=crop&q=80&w=600" },
+            { name: "Spade terminal", img: "https://www.ferrulesdirect.com/cdn/shop/products/SNYBL5-4_2nd_700x700.jpg?v=1706805558" },
+            { name: "Ring terminal", img: "https://assets-fe147638ed.cdn.insitecloud.net/33e7736c37cc4d5_lg.jpg" },
+            { name: "Utility knife", img: "https://image.made-in-china.com/202f0j00YOIahCWqHRke/Powertec-Heavy-Duty-Electric-Safety-Plastic-Utility-Knife-Butter.webp?auto=format&fit=crop&q=80&w=600" },
+            { name: "Solar panel", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZu8erejRnosZ4OKGymJqH2jKqZYllP2W-rA&s?auto=format&fit=crop&q=80&w=600" },
+            { name: "Inverter", img: "https://www.ttnergy.com/wp-content/uploads/2023/01/Hd00034fc37044527b21b76f94337dd82R.jpg_960x960.webp?auto=format&fit=crop&q=80&w=600" },
+            { name: "MC4 connector", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7GBIQOWs-7D6VtVaQCYTfVF8fdAIXo-XLvg&s" },
+            { name: "Solar cable", img: "https://image.made-in-china.com/202f0j00KhvkBazshfbY/Solar-PV-DC-Cable-25mm2-35-mm-6-mm2-10-mm-Electric-3-5mm-PV-Cable.webp" },
+            { name: "Crimping tool (MC4)", img: "https://www.chinaqijun.com/wp-content/themes/qijun/timthumb.php?src=https://www.chinaqijun.com/wp-content/uploads/2019/11/MC4-connector-crimping-tool-for-MC4-Connector-Solar-Cable-PV-Crimp-Tools-2.jpg&w=500;&h=500;&zc=1" },
+            { name: "Battery", img: "https://cdn.britannica.com/13/156713-004-96897BF4.jpg?auto=format&fit=crop&q=80&w=600" },
+            { name: "Charge controller", img: "https://cdn.shopify.com/s/files/1/0493/9834/9974/files/solar-charge-controller.jpg?v=1686108149" },
+            { name: "Circuit breaker", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgOQ3zTgCaXpknBeZvuFdUOToSyfqrp2v2Lg&s?auto=format&fit=crop&q=80&w=600" },
+            { name: "Surge protection device", img: "https://lsp.global/wp-content/uploads/2024/12/Type-2-AC-Surge-Protective-Device-SPD-SLP40-275-3S1-1024x1024.webp" },
+            { name: "Monitoring system", img: "https://www.itarian.com/images/open-source-rmm/network-monitoring-system.png?auto=format&fit=crop&q=80&w=600" },
+            { name: "Automatic transfer switch", img: "https://electricalwall.com/wp-content/uploads/2024/10/new.jpg" },
+            { name: "Cable cutter", img: "https://ronixtools.com/img/media/products/rh-1841/original-638174808806495647.webp?auto=format&fit=crop&q=80&w=600" },
+            { name: "Multimeter", img: "https://media.fluke.com/9308ee59-4d6d-4702-848f-b108002ad3f0_original__size.jpg?auto=format&fit=crop&q=80&w=600" },
+            { name: "Clamp meter", img: "https://cdn1.botland.store/82069-large_default/clamp-meter-uni-t-ut203.jpg" },
+            { name: "Rails", img: "https://solarhub.ie/cdn/shop/files/Image_20230209151201_93115ba4-fdff-4b28-b8d6-a005dcdd7cbb.jpg?v=1695976588" },
+            { name: "L-feet", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRHtCmEBOYoKWfC43AGmUFXYyuM5jJk0hZlfw&s" },
+            { name: "Mid clamps", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvp-yl-b7ibpsO1MicOnpl94uVHEQBDMRJpQ&s" },
+            { name: "End clamps", img: "https://voltaconsolar.com/cdn/shop/files/end-clamp-35mm-for-solar-panel-mounting-rail-559431.jpg?v=1747930001" },
+            { name: "Electric drill/driver", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0eW4PMuZF7WU00dVtrMHrBWhEj9w2tSCBlw&s?auto=format&fit=crop&q=80&w=600" },
+            { name: "Bolts", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4LAoF1gYP5Kpw4V8IPwpizzyqafeC3XTvzQ&s?auto=format&fit=crop&q=80&w=600" }
+
+        ];
+
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let score = { correct: 0, wrong: 0 };
+        let selectedOption = null;
+        let attempts = 0;
+        let answered = false;
+        const synth = window.speechSynthesis;
+        let femaleVoice = null;
+
+        function findFemaleVoice() {
+            const voices = synth.getVoices();
+            femaleVoice = voices.find(v => (v.name.includes('Female') || v.name.includes('Google UK English Female') || v.name.includes('Zira') || v.name.includes('Samantha')) && v.lang.includes('en'));
+            if (!femaleVoice) femaleVoice = voices.find(v => v.lang.includes('en'));
+        }
+
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = findFemaleVoice;
+        }
+
+        function speak(text) {
+            if (synth.speaking) synth.cancel();
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.voice = femaleVoice;
+            utter.rate = 0.8; // Slow and clear
+            utter.pitch = 1.0;
+            synth.speak(utter);
+        }
+
+        function initGame() {
+            // Pick 15 random tools
+            currentQuestions = [...ALL_TOOLS]
+                .sort(() => Math.random() - 0.5)
+                .slice(0, 15);
+            
+            currentIndex = 0;
+            score = { correct: 0, wrong: 0 };
+            updateStats();
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            answered = false;
+            attempts = 0;
+            selectedOption = null;
+            
+            const tool = currentQuestions[currentIndex];
+            const feedback = document.getElementById('feedback-message');
+            feedback.innerText = '';
+            
+            document.getElementById('confirm-btn').disabled = true;
+            document.getElementById('confirm-btn').classList.remove('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+
+            document.getElementById('progress-text').innerText = `Question ${currentIndex + 1} of 15`;
+            document.getElementById('progress-bar').style.width = `${((currentIndex + 1) / 15) * 100}%`;
+
+            const imgEl = document.getElementById('tool-image');
+            const loader = document.getElementById('image-loader');
+            loader.style.display = 'block';
+            imgEl.style.opacity = '0';
+            imgEl.src = tool.img;
+
+            // Generate 4 options
+            const options = [tool.name];
+            while (options.length < 4) {
+                const randomName = ALL_TOOLS[Math.floor(Math.random() * ALL_TOOLS.length)].name;
+                if (!options.includes(randomName)) options.push(randomName);
+            }
+            options.sort(() => Math.random() - 0.5);
+
+            const grid = document.getElementById('options-grid');
+            grid.innerHTML = '';
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn p-5 border-2 border-slate-100 rounded-2xl text-left font-semibold text-slate-700 bg-white hover:bg-slate-50 transition-all flex items-center gap-3';
+                btn.innerHTML = `
+                    <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] text-slate-400 font-bold shrink-0">○</div>
+                    <span class="leading-tight">${opt}</span>
+                `;
+                btn.onclick = () => selectOption(opt, btn);
+                grid.appendChild(btn);
+            });
+
+            // Auto-speak on start
+            setTimeout(() => speak("What is this tool?"), 600);
+        }
+
+        function selectOption(name, element) {
+            if (answered) return;
+            selectedOption = name;
+            document.querySelectorAll('.option-btn').forEach(b => {
+                b.classList.remove('option-selected');
+                b.querySelector('div').innerText = '○';
+                b.querySelector('div').className = 'w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] text-slate-400 font-bold shrink-0';
+            });
+            element.classList.add('option-selected');
+            element.querySelector('div').innerText = '●';
+            element.querySelector('div').className = 'w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-[10px] text-blue-600 font-bold shrink-0';
+            
+            document.getElementById('confirm-btn').disabled = false;
+            speak(name);
+        }
+
+        function handleConfirm() {
+            if (!selectedOption || answered) return;
+            
+            const correctName = currentQuestions[currentIndex].name;
+            const feedback = document.getElementById('feedback-message');
+
+            if (selectedOption === correctName) {
+                answered = true;
+                score.correct++;
+                updateStats();
+                
+                const praises = ["Well done", "Good job", "Excellent", "Very good"];
+                const pick = praises[Math.floor(Math.random() * praises.length)];
+                
+                feedback.innerText = pick + "!";
+                feedback.className = 'h-6 text-emerald-600 font-bold text-center animate-bounce-subtle';
+                
+                document.getElementById('confirm-btn').classList.add('hidden');
+                document.getElementById('next-btn').classList.remove('hidden');
+                speak(pick);
+            } else {
+                attempts++;
+                score.wrong++;
+                updateStats();
+                
+                // Play error sound (simulated by voice)
+                speak("Incorrect.");
+                
+                if (attempts >= 3) {
+                    answered = true;
+                    feedback.innerHTML = `Correct answer: <span class="font-bold underline">${correctName}</span>`;
+                    feedback.className = 'h-6 text-rose-600 font-medium text-center';
+                    document.getElementById('confirm-btn').classList.add('hidden');
+                    document.getElementById('next-btn').classList.remove('hidden');
+                } else {
+                    feedback.innerText = `Wrong! Try again (${3 - attempts} left)`;
+                    feedback.className = 'h-6 text-orange-500 font-bold text-center';
+                    // Reset selection for retry
+                    selectedOption = null;
+                    document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('option-selected'));
+                    document.getElementById('confirm-btn').disabled = true;
+                }
+            }
+        }
+
+        function nextQuestion() {
+            currentIndex++;
+            if (currentIndex < 15) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('stat-correct').innerText = score.correct;
+            document.getElementById('stat-wrong').innerText = score.wrong;
+        }
+
+        function showResults() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('final-correct').innerText = score.correct;
+            document.getElementById('final-wrong').innerText = score.wrong;
+            speak(`Quiz complete! You identified ${score.correct} out of 15 tools correctly.`);
+        }
+
+        // Keyboard Shortcut: Enter
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const next = document.getElementById('next-btn');
+                const confirm = document.getElementById('confirm-btn');
+                if (!next.classList.contains('hidden')) next.click();
+                else if (!confirm.disabled && !confirm.classList.contains('hidden')) confirm.click();
+            }
+        });
+
+        window.onload = () => {
+            findFemaleVoice();
+            initGame();
+        };
+    </script>
+</body>
+</html>
