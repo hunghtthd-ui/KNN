@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Family Vocabulary Fill-in-the-Blank</title>
+  <!-- Sử dụng Tailwind CSS từ CDN để có thiết kế hiện đại, mượt mà -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Nhúng Google Fonts trẻ trung, học đường -->
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Quicksand', sans-serif;
+    }
+    .title-font {
+      font-family: 'Fredoka One', cursive;
+    }
+    /* Chuyển động mượt cho các nút chữ cái */
+    .letter-btn {
+      transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.15s ease;
+    }
+    .letter-btn:active {
+      transform: scale(0.9);
+    }
+    /* Hiệu ứng rung khi trả lời sai */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      75% { transform: translateX(8px); }
+    }
+    .shake-anim {
+      animation: shake 0.4s ease-in-out;
+    }
+    /* Hiệu ứng nhảy múa chúc mừng khi thắng */
+    @keyframes bounce-slow {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .bounce-anim {
+      animation: bounce-slow 0.6s infinite alternate;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 min-h-screen flex flex-col items-center justify-between p-4 overflow-x-hidden select-none">
+
+  <!-- Màn hình chào mừng (Bắt buộc click để kích hoạt Audio Context và tránh lỗi chặn tự động phát âm thanh) -->
+  <div id="start-screen" class="fixed inset-0 bg-indigo-900/90 flex flex-col items-center justify-center z-50 p-6 text-center">
+    <div class="bg-white p-8 rounded-3xl shadow-2xl max-w-md w-full border-4 border-indigo-400 transform transition-all">
+      <span class="text-6xl mb-4 block animate-bounce">👋</span>
+      <h1 class="title-font text-3xl text-indigo-600 mb-2">Ready to Learn?</h1>
+      <p class="text-slate-600 mb-6 font-medium">Learn vocabulary about family members with pictures and native pronunciation!</p>
+      <button onclick="startGame()" class="w-full bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-500 hover:to-emerald-600 text-white font-bold py-4 px-8 rounded-2xl shadow-lg shadow-green-500/30 transform hover:-translate-y-1 transition text-xl title-font">
+        START GAME
+      </button>
+    </div>
+  </div>
+
+  <!-- Header của game -->
+  <header class="w-full max-w-4xl flex justify-between items-center mb-4 bg-white/75 backdrop-blur-md px-6 py-3 rounded-2xl shadow-sm border border-white/40">
+    <div>
+      <h1 class="title-font text-xl sm:text-2xl text-indigo-600 tracking-wide">Family Word Quiz</h1>
+      <p class="text-xs text-slate-500 font-medium hidden sm:block">Click letters or type on keyboard to fill in the blanks!</p>
+    </div>
+    <!-- Điểm số & Tiến trình -->
+    <div class="flex items-center gap-4">
+      <div class="text-right">
+        <span class="text-xs text-slate-500 font-bold block">PROGRESS</span>
+        <span class="font-extrabold text-indigo-700" id="progress-text">1 / 15</span>
+      </div>
+      <div class="w-24 bg-indigo-100 h-3 rounded-full overflow-hidden">
+        <div id="progress-bar" class="bg-indigo-600 h-full transition-all duration-300" style="width: 0%"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Khu vực chơi chính -->
+  <main class="w-full max-w-2xl bg-white rounded-3xl shadow-xl border-4 border-white p-4 sm:p-6 flex flex-col items-center flex-grow justify-center gap-6 relative" id="game-card">
+    
+    <!-- Heart Icons thể hiện số lượt thử còn lại -->
+    <div class="absolute top-4 right-4 flex gap-1" id="hearts-container">
+      <!-- Sẽ được điền bằng JS -->
+    </div>
+
+    <!-- Khung hiển thị Ảnh từ vựng -->
+    <div class="relative w-full max-w-md h-48 sm:h-64 bg-slate-100 rounded-2xl overflow-hidden shadow-inner flex items-center justify-center border-2 border-slate-100">
+      <!-- Indicator tải ảnh -->
+      <div id="image-loader" class="absolute inset-0 flex items-center justify-center bg-slate-100 z-10">
+        <div class="animate-spin rounded-full h-10 w-10 border-4 border-indigo-500 border-t-transparent"></div>
+      </div>
+      
+      <!-- Hình ảnh từ vựng -->
+      <img id="vocab-image" src="" alt="Vocabulary Image" class="w-full h-full object-contain z-0 opacity-0 transition-opacity duration-300" onload="imageLoaded()" onerror="imageFailed()">
+      
+      <!-- Emoji dự phòng khi ảnh bị lỗi mạng -->
+      <div id="emoji-fallback" class="hidden text-8xl flex flex-col items-center justify-center">
+        <span id="fallback-emoji-char">🧔</span>
+      </div>
+    </div>
+
+    <!-- Trợ năng đọc giọng nói -->
+    <div class="flex gap-2 justify-center items-center">
+      <button onclick="speakCurrentWord()" class="flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-4 py-2 rounded-full font-bold text-sm border border-indigo-100 transition shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828a1 1 0 010-1.415z" clip-rule="evenodd" />
+        </svg>
+        Listen Word
+      </button>
+    </div>
+
+    <!-- Khung điền từ (Chỗ trống / Blanks) -->
+    <div id="blanks-container" class="flex flex-wrap justify-center gap-2 w-full my-2 min-h-[50px]">
+      <!-- Sẽ được điền bằng JS dựa theo độ dài của từ -->
+    </div>
+
+    <!-- Pool chứa các chữ cái bị trộn (Letter Pool) -->
+    <div id="letters-pool" class="flex flex-wrap justify-center gap-2 w-full p-2 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 min-h-[60px]">
+      <!-- Chữ cái ngẫu nhiên hiển thị tại đây -->
+    </div>
+
+    <!-- Khung thông báo và Hành động -->
+    <div class="w-full flex flex-col items-center gap-4">
+      
+      <!-- Phản hồi khi kiểm tra (Đúng/Sai/Gợi ý đáp án) -->
+      <div id="feedback-message" class="text-lg font-bold text-center h-8 transition-all duration-200"></div>
+
+      <!-- Khung các nút điều khiển -->
+      <div class="flex gap-4 w-full max-w-md">
+        <button id="reset-btn" onclick="clearAllSelections()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-2xl font-bold transition flex items-center justify-center gap-2 border-b-4 border-slate-300 hover:border-slate-400">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 110 2H4a1 1 0 01-1-1V3a1 1 0 011-1z" clip-rule="evenodd" />
+          </svg>
+          Reset
+        </button>
+        <button id="check-btn" onclick="checkAnswer()" class="flex-1 bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white py-3 rounded-2xl font-bold transition shadow-lg shadow-indigo-200 text-lg border-b-4 border-indigo-700 hover:border-indigo-800">
+          Check (Enter)
+        </button>
+        <button id="next-btn" onclick="nextQuestion()" class="hidden flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 rounded-2xl font-bold transition shadow-lg shadow-green-200 text-lg border-b-4 border-green-700 hover:border-green-800 animate-bounce">
+          Next ➜
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Màn hình kết quả tổng kết cuối cùng -->
+  <div id="score-screen" class="hidden fixed inset-0 bg-indigo-950/95 flex flex-col items-center justify-center z-40 p-4">
+    <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-2xl max-w-2xl w-full border-4 border-yellow-400 text-center flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
+      <h2 class="title-font text-3xl sm:text-4xl text-yellow-500 tracking-wide animate-pulse">🎉 EXCELLENT WORK! 🎉</h2>
+      <p class="text-slate-600 font-medium">You have completed all vocabulary flashcards!</p>
+      
+      <!-- Thống kê điểm số lớn -->
+      <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border-2 border-slate-100">
+        <div class="p-3 bg-green-50 rounded-xl border border-green-100">
+          <span class="text-sm font-bold text-green-600 block">Total Solved</span>
+          <span class="text-3xl font-extrabold text-green-700" id="total-correct-stat">15</span>
+        </div>
+        <div class="p-3 bg-red-50 rounded-xl border border-red-100">
+          <span class="text-sm font-bold text-red-600 block">Total Mistakes</span>
+          <span class="text-3xl font-extrabold text-red-700" id="total-mistakes-stat">0</span>
+        </div>
+      </div>
+
+      <!-- Thống kê chi tiết từng câu để xem lại -->
+      <div class="text-left w-full">
+        <h3 class="font-bold text-slate-700 mb-2">Word Statistics:</h3>
+        <div id="statistics-list" class="space-y-2 max-h-48 overflow-y-auto pr-2">
+          <!-- Sẽ được hiển thị bằng JS -->
+        </div>
+      </div>
+
+      <!-- Nút chơi lại -->
+      <button onclick="restartGame()" class="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-2xl shadow-lg shadow-indigo-400/30 transition transform hover:-translate-y-0.5 text-lg title-font">
+        PLAY AGAIN
+      </button>
+    </div>
+  </div>
+
+  <!-- Footer bản quyền -->
+  <footer class="mt-4 text-center text-slate-400 text-xs font-semibold">
+    Family Vocabulary Practice Platform • Created with Love For Education
+  </footer>
+
+  <script>
+    /* ==========================================================================
+       1. KHAI BÁO CẤU HÌNH DỮ LIỆU TỪ VỰNG (ẢNH CHẤT LƯỢNG CAO, ỔN ĐỊNH & EMOJI)
+       ========================================================================== */
+    const VOCABULARY_LIST = [
+      {
+        word: "Grandmother",
+        emoji: "👵"
+      },
+      {
+        word: "Grandfather",
+        emoji: "👴"
+      },
+      {
+        word: "Grandparents",
+        emoji: "👵👴",
+        image: "https://images.unsplash.com/photo-1534433842342-99238b6f338d?auto=format&fit=crop&w=600&q=80"
+      },
+      {
+        word: "Husband",
+        emoji: "🧔",
+        image: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=600&q=80"
+      },
+      {
+        word: "Wife",
+        emoji: "👩",
+        image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80"
+      },
+      {
+        word: "Mother",
+        emoji: "👩‍👦",
+        image: "https://images.unsplash.com/photo-1594744803329-e58b31de215f?auto=format&fit=crop&w=600&q=80"
+      },
+      {
+        word: "Father",
+        emoji: "👨‍👦",
+        image: "https://images.unsplash.com/photo-1489980508314-941910ded1f4?auto=format&fit=crop&w=600&q=80"
+      },
+      {
+        word: "Dad",
+        emoji: "👨",
+        image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=600&q=80"
+      },
+      {
+        word: "Mom",
+        emoji: "👩",
+        image: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=600&q=80"
+      },
+      {
+        word: "Parents",
+        emoji: "👨‍👩‍👦",
+        image: "https://images.unsplash.com/photo-1536640712247-c57f8cf2027a?auto=format&fit=crop&w=600&q=80"
+      },
+      {
+        word: "Brother",
+        emoji: "👦"
+      },
+      {
+        word: "Sister",
+        emoji: "👧"
+      },
+      {
+        word: "Son",
+        emoji: "👦"
+      },
+      {
+        word: "Daughter",
+        emoji: "👧",
+        image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80"
+      },
+      {
+        word: "Children",
+        emoji: "🧑‍🤝‍🧑",
+        image: "https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?auto=format&fit=crop&w=600&q=80"
+      }
+    ];
+
+    const PRAISES = ["Well done!", "Good job!", "Excellent!", "Very good!"];
+
+    /* ==========================================================================
+       2. QUẢN LÝ TRẠNG THÁI (STATE MANAGEMENT)
+       ========================================================================== */
+    let questions = []; // Danh sách câu hỏi sau khi trộn ngẫu nhiên
+    let currentIdx = 0; // Vị trí câu hỏi hiện tại
+    let currentWordObj = null; // Đối tượng từ vựng hiện tại
+    
+    let originalLetters = []; // Danh sách các ký tự gốc để lắp ghép (định danh bằng id để chống trùng lặp chữ giống nhau)
+    let shuffledLetters = []; // Các chữ cái hiển thị trong pool
+    let filledSlots = []; // Các ký tự người dùng đã chọn ráp vào ô trống
+
+    let currentIncorrectCount = 0; // Số lần trả lời sai ở câu hiện tại
+    let statistics = []; // Thống kê câu đúng/sai để xuất màn hình cuối
+
+    // Thống kê chung
+    let totalMistakesInGame = 0;
+
+    // Web Audio API để phát âm thanh phản hồi chuẩn, độc lập
+    let audioCtx = null;
+
+    /* ==========================================================================
+       3. HỆ THỐNG ÂM THANH (SYNTHESIZED AUDIO & TEXT-TO-SPEECH)
+       ========================================================================== */
+    
+    // Khởi tạo Audio Context khi người dùng ấn nút Start
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    // Phát âm thanh chúc mừng (Rising Arpeggio)
+    function playSuccessSFX() {
+      if (!audioCtx) return;
+      const notes = [261.63, 329.63, 392.00, 523.25]; // Đô - Mi - Sol - Đô (C4 - E4 - G4 - C5)
+      let time = audioCtx.currentTime;
+      
+      notes.forEach((freq, index) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, time + index * 0.1);
+        
+        gain.gain.setValueAtTime(0.2, time + index * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.01, time + index * 0.1 + 0.25);
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.start(time + index * 0.1);
+        osc.stop(time + index * 0.1 + 0.25);
+      });
+    }
+
+    // Phát âm thanh báo sai (Low buzz)
+    function playErrorSFX() {
+      if (!audioCtx) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(130.81, audioCtx.currentTime); // C3
+      osc.frequency.linearRampToValueAtTime(85.00, audioCtx.currentTime + 0.3); // Xuống thấp dần
+      
+      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+      
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.35);
+    }
+
+    // Phát âm thanh gõ nhẹ khi nhấn chữ cái
+    function playClickSFX() {
+      if (!audioCtx) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+      
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.05);
+    }
+
+    // Trình đọc tiếng Anh (TTS) giọng NỮ, Đọc chậm, chuẩn
+    function speakText(text, isSlow = true) {
+      if ('speechSynthesis' in window) {
+        // Hủy các giọng đọc cũ đang dang dở để tránh xếp hàng quá lâu
+        window.speechSynthesis.cancel();
+        
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        // Tốc độ: 0.75 nếu chọn chế độ chậm (hoặc 1.0 cho bình thường)
+        utterance.rate = isSlow ? 0.75 : 1.0; 
+        utterance.pitch = 1.1; // Chỉnh giọng hơi cao lên một chút để tạo giọng nữ tự nhiên
+
+        // Tìm kiếm và cố gắng thiết lập giọng nữ chuẩn của US/UK
+        const voices = window.speechSynthesis.getVoices();
+        const femaleVoice = voices.find(voice => 
+          (voice.name.toLowerCase().includes('female') || 
+           voice.name.toLowerCase().includes('google us english') || 
+           voice.name.toLowerCase().includes('samantha') || 
+           voice.name.toLowerCase().includes('zira') || 
+           voice.name.toLowerCase().includes('hazel')) && voice.lang.startsWith('en')
+        );
+        
+        if (femaleVoice) {
+          utterance.voice = femaleVoice;
+        }
+        
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    // Phát âm thanh từng ký tự đơn khi học sinh click hoặc gõ bàn phím
+    function speakLetter(letter) {
+      speakText(letter.toLowerCase(), false);
+    }
+
+    // Phát âm từ vựng hiện tại của câu hỏi
+    function speakCurrentWord() {
+      if (currentWordObj) {
+        speakText(currentWordObj.word, true);
+      }
+    }
+
+    /* ==========================================================================
+       4. ĐIỀU HƯỚNG VÀ KHỞI TẠO GAME (GAMEFLOW & CONTROL)
+       ========================================================================== */
+    
+    // Hàm đảo lộn phần tử mảng (Fisher-Yates Shuffle)
+    function shuffleArray(array) {
+      let shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
+
+    // Bắt đầu game từ màn hình chào mừng
+    function startGame() {
+      initAudio();
+      document.getElementById('start-screen').classList.add('hidden');
+      
+      // Xáo trộn toàn bộ 15 câu hỏi để đảm bảo không lặp lại thứ tự cũ
+      questions = shuffleArray(VOCABULARY_LIST);
+      currentIdx = 0;
+      totalMistakesInGame = 0;
+      statistics = [];
+      
+      loadQuestion();
+    }
+
+    // Tải thông tin câu hỏi hiện tại lên màn hình
+    function loadQuestion() {
+      currentWordObj = questions[currentIdx];
+      currentIncorrectCount = 0;
+
+      // Reset các thông báo giao diện
+      document.getElementById('feedback-message').textContent = "";
+      document.getElementById('feedback-message').className = "text-lg font-bold text-center h-8";
+      
+      // Nút điều khiển
+      document.getElementById('check-btn').classList.remove('hidden');
+      document.getElementById('reset-btn').classList.remove('hidden');
+      document.getElementById('next-btn').classList.add('hidden');
+
+      // Cập nhật progress bar
+      const progressText = document.getElementById('progress-text');
+      const progressBar = document.getElementById('progress-bar');
+      const progressPercent = ((currentIdx + 1) / questions.length) * 100;
+      progressText.textContent = `${currentIdx + 1} / ${questions.length}`;
+      progressBar.style.width = `${progressPercent}%`;
+
+      // Cập nhật tim (Chỉ cho phép thử sai 3 lần)
+      updateHeartsUI();
+
+      // Cấu hình hình ảnh / ảnh dự phòng
+      const imgElem = document.getElementById('vocab-image');
+      const fallbackElem = document.getElementById('emoji-fallback');
+      const loaderElem = document.getElementById('image-loader');
+      
+      imgElem.classList.add('opacity-0');
+      loaderElem.classList.remove('hidden');
+      fallbackElem.classList.add('hidden');
+
+      imgElem.src = currentWordObj.image;
+      document.getElementById('fallback-emoji-char').textContent = currentWordObj.emoji;
+
+      // Tạo cấu trúc dữ liệu cho mảng ký tự
+      const lettersArray = currentWordObj.word.split("");
+      // Đánh số ID cho từng ký tự để phân biệt (nhất là các chữ giống nhau)
+      originalLetters = lettersArray.map((letter, idx) => ({
+        id: idx,
+        char: letter,
+        selected: false
+      }));
+
+      // Xáo trộn chữ cái cho Pool hiển thị
+      shuffledLetters = shuffleArray(originalLetters);
+      // Khởi tạo mảng slot trống
+      filledSlots = Array(lettersArray.length).fill(null);
+
+      // Render giao diện chỗ trống và pool
+      renderSlots();
+      renderPool();
+
+      // Tự động kích hoạt giọng đọc chuẩn ngay khi chuyển câu
+      setTimeout(() => {
+        speakCurrentWord();
+      }, 500);
+    }
+
+    // Sự kiện hình ảnh tải thành công
+    function imageLoaded() {
+      const imgElem = document.getElementById('vocab-image');
+      const loaderElem = document.getElementById('image-loader');
+      imgElem.classList.remove('opacity-0');
+      loaderElem.classList.add('hidden');
+    }
+
+    // Sự kiện hình ảnh tải thất bại (mạng yếu, hỏng link) -> Bật chế độ Emoji dự phòng
+    function imageFailed() {
+      const imgElem = document.getElementById('vocab-image');
+      const fallbackElem = document.getElementById('emoji-fallback');
+      const loaderElem = document.getElementById('image-loader');
+      
+      imgElem.classList.add('opacity-0');
+      loaderElem.classList.add('hidden');
+      fallbackElem.classList.remove('hidden');
+    }
+
+    // Cập nhật số Tim lượt sai tối đa (3 lần thử)
+    function updateHeartsUI() {
+      const container = document.getElementById('hearts-container');
+      container.innerHTML = "";
+      const maxChances = 3;
+      const leftChances = Math.max(0, maxChances - currentIncorrectCount);
+
+      for (let i = 0; i < maxChances; i++) {
+        const heart = document.createElement('span');
+        heart.className = "text-xl transition-all duration-300";
+        if (i < leftChances) {
+          heart.textContent = "❤️";
+        } else {
+          heart.textContent = "🤍";
+          heart.classList.add('scale-75', 'opacity-50');
+        }
+        container.appendChild(heart);
+      }
+    }
+
+    /* ==========================================================================
+       5. QUY TRÌNH TƯƠNG TÁC RÁP CHỮ (WORD-BUILDING LOGIC)
+       ========================================================================== */
+
+    // Tạo các ô Blanks trống để điền chữ cái
+    function renderSlots() {
+      const container = document.getElementById('blanks-container');
+      container.innerHTML = "";
+
+      filledSlots.forEach((item, index) => {
+        const slot = document.createElement('button');
+        
+        // Thêm các class responsive tối ưu cho màn hình nhỏ
+        let sizeClass = "w-10 h-10 text-lg sm:w-12 sm:h-12 sm:text-xl";
+        // Nếu từ vựng quá dài (như Grandparents), tự động thu nhỏ cỡ chữ và ô một chút để không vỡ layout
+        if (currentWordObj.word.length > 10) {
+          sizeClass = "w-8 h-8 text-sm sm:w-10 sm:h-10 sm:text-lg";
+        }
+
+        slot.className = `${sizeClass} flex items-center justify-center font-extrabold rounded-xl border-2 border-slate-300 focus:outline-none transition-all`;
+        
+        if (item) {
+          // Ô đã được lấp đầy
+          slot.textContent = item.char;
+          slot.classList.add('bg-indigo-100', 'text-indigo-800', 'border-indigo-400', 'shadow-md', 'scale-105', 'active:scale-95');
+          // Nhấp vào chữ đã điền để hất nó trở lại Pool
+          slot.onclick = () => returnLetterToPool(index);
+        } else {
+          // Ô trống
+          slot.textContent = "";
+          slot.classList.add('bg-slate-100/50', 'text-slate-400', 'border-dashed');
+          slot.disabled = true; // Không cho click vào ô trống rỗng
+        }
+
+        container.appendChild(slot);
+      });
+    }
+
+    // Vẽ Pool các chữ cái bị trộn ngẫu nhiên bên dưới
+    function renderPool() {
+      const container = document.getElementById('letters-pool');
+      container.innerHTML = "";
+
+      shuffledLetters.forEach((item) => {
+        const btn = document.createElement('button');
+        
+        let sizeClass = "w-10 h-10 text-lg sm:w-12 sm:h-12 sm:text-xl";
+        if (currentWordObj.word.length > 10) {
+          sizeClass = "w-8 h-8 text-sm sm:w-10 sm:h-10 sm:text-lg";
+        }
+
+        btn.className = `letter-btn ${sizeClass} flex items-center justify-center font-extrabold rounded-xl border-2 transition-all shadow-sm`;
+
+        if (item.selected) {
+          // Chữ cái đã được sử dụng -> Làm mờ đi và vô hiệu hóa click
+          btn.textContent = item.char;
+          btn.classList.add('bg-slate-100', 'text-slate-300', 'border-slate-200', 'opacity-30', 'cursor-not-allowed');
+          btn.disabled = true;
+        } else {
+          // Chữ cái chưa sử dụng -> Rực rỡ, sẵn sàng bấm
+          btn.textContent = item.char;
+          btn.classList.add('bg-white', 'hover:bg-indigo-50', 'text-indigo-700', 'border-indigo-200', 'hover:border-indigo-400', 'hover:-translate-y-0.5', 'cursor-pointer');
+          btn.onclick = () => selectLetter(item);
+        }
+
+        container.appendChild(btn);
+      });
+    }
+
+    // Hành động: Nhấp chọn chữ cái từ Pool để điền lên Blanks
+    function selectLetter(item) {
+      // Tìm vị trí ô trống đầu tiên từ trái qua phải
+      const emptyIndex = filledSlots.indexOf(null);
+      if (emptyIndex !== -1) {
+        playClickSFX();
+        speakLetter(item.char); // Đọc to âm chữ cái đó lên
+        
+        filledSlots[emptyIndex] = item;
+        item.selected = true;
+
+        renderSlots();
+        renderPool();
+      }
+    }
+
+    // Hành động: Nhấp vào chữ đã lắp trên Blanks để hất nó quay lại Pool
+    function returnLetterToPool(slotIndex) {
+      const item = filledSlots[slotIndex];
+      if (item) {
+        playClickSFX();
+        item.selected = false;
+        filledSlots[slotIndex] = null;
+
+        renderSlots();
+        renderPool();
+      }
+    }
+
+    // Làm rỗng toàn bộ lựa chọn, đưa hết chữ về Pool ban đầu
+    function clearAllSelections() {
+      originalLetters.forEach(item => item.selected = false);
+      filledSlots = Array(currentWordObj.word.length).fill(null);
+      renderSlots();
+      renderPool();
+    }
+
+    /* ==========================================================================
+       6. HỆ THỐNG PHÂN TÍCH, KIỂM TRA ĐÁP ÁN (SUBMIT & EVALUATE)
+       ========================================================================== */
+
+    // Kiểm tra câu trả lời
+    function checkAnswer() {
+      // Tập hợp các chữ đã điền thành chuỗi
+      const userWord = filledSlots.map(item => item ? item.char : "").join("");
+      const correctWord = currentWordObj.word;
+
+      const feedback = document.getElementById('feedback-message');
+      const card = document.getElementById('game-card');
+
+      // Trường hợp: Học sinh chưa điền hết từ
+      if (userWord.length < correctWord.length) {
+        feedback.textContent = "Please fill in all the letters! ✍️";
+        feedback.className = "text-amber-500 font-bold text-center h-8";
+        
+        card.classList.add('shake-anim');
+        playErrorSFX();
+        setTimeout(() => card.classList.remove('shake-anim'), 400);
+        return;
+      }
+
+      // TRƯỜNG HỢP: TRẢ LỜI ĐÚNG
+      if (userWord.toLowerCase() === correctWord.toLowerCase()) {
+        const randomPraise = PRAISES[Math.floor(Math.random() * PRAISES.length)];
+        feedback.textContent = `🎉 ${randomPraise} The answer is: ${correctWord}!`;
+        feedback.className = "text-green-600 font-bold text-center h-8 text-xl animate-bounce";
+        
+        playSuccessSFX();
+        speakText(`${randomPraise}. ${correctWord}`, false);
+
+        // Lưu thống kê đúng
+        statistics.push({
+          word: correctWord,
+          attempts: currentIncorrectCount + 1,
+          status: "Correct"
+        });
+
+        // Chuyển đổi trạng thái giao diện nút bấm
+        document.getElementById('check-btn').classList.add('hidden');
+        document.getElementById('reset-btn').classList.add('hidden');
+        document.getElementById('next-btn').classList.remove('hidden');
+        document.getElementById('next-btn').focus(); // Focus tự động vào nút Tiếp theo
+        
+        // Vô hiệu hóa việc bấm các ô chữ sau khi đã thắng câu đó
+        disableInteraction();
+
+      } else {
+        // TRƯỜNG HỢP: TRẢ LỜI SAI
+        currentIncorrectCount++;
+        totalMistakesInGame++;
+        updateHeartsUI();
+
+        card.classList.add('shake-anim');
+        playErrorSFX();
+        setTimeout(() => card.classList.remove('shake-anim'), 400);
+
+        // Nếu sai vượt quá 3 lần cho phép -> Hiển thị đáp án chính xác
+        if (currentIncorrectCount >= 3) {
+          feedback.textContent = `💡 Hint: The correct word is "${correctWord}".`;
+          feedback.className = "text-red-600 font-bold text-center h-8 text-md";
+          
+          // Điền tự động đáp án đúng vào ô để học sinh ghi nhớ trực quan
+          autoFillCorrectAnswer();
+
+          // Lưu thống kê sai nhiều lần
+          statistics.push({
+            word: correctWord,
+            attempts: currentIncorrectCount,
+            status: "Failed"
+          });
+
+          document.getElementById('check-btn').classList.add('hidden');
+          document.getElementById('reset-btn').classList.add('hidden');
+          document.getElementById('next-btn').classList.remove('hidden');
+          document.getElementById('next-btn').focus();
+        } else {
+          // Chưa quá 3 lần -> Tự động reset các chữ đã chọn để học sinh ráp lại từ đầu dễ dàng
+          feedback.textContent = "Oops! Try again! Let's re-arrange 🔄";
+          feedback.className = "text-red-500 font-bold text-center h-8";
+          
+          setTimeout(() => {
+            clearAllSelections();
+          }, 800);
+        }
+      }
+    }
+
+    // Tự động lắp đầy đáp án đúng để hiển thị gợi ý khi hết lượt
+    function autoFillCorrectAnswer() {
+      const letters = currentWordObj.word.split("");
+      filledSlots = letters.map((char, index) => ({
+        id: index,
+        char: char,
+        selected: true
+      }));
+      renderSlots();
+      // Khóa tương tác luôn
+      disableInteraction();
+    }
+
+    // Khóa tương tác bấm chữ
+    function disableInteraction() {
+      const blankButtons = document.querySelectorAll('#blanks-container button');
+      blankButtons.forEach(btn => btn.disabled = true);
+      const poolButtons = document.querySelectorAll('#letters-pool button');
+      poolButtons.forEach(btn => btn.disabled = true);
+    }
+
+    // Tiến sang câu hỏi tiếp theo
+    function nextQuestion() {
+      currentIdx++;
+      if (currentIdx < questions.length) {
+        loadQuestion();
+      } else {
+        showFinalScore();
+      }
+    }
+
+    // Hiển thị màn hình tổng kết kết quả trò chơi
+    function showFinalScore() {
+      document.getElementById('score-screen').classList.remove('hidden');
+      
+      const correctCount = statistics.filter(item => item.status === "Correct").length;
+      document.getElementById('total-correct-stat').textContent = `${correctCount} / ${questions.length}`;
+      document.getElementById('total-mistakes-stat').textContent = totalMistakesInGame;
+
+      const statsList = document.getElementById('statistics-list');
+      statsList.innerHTML = "";
+
+      statistics.forEach(item => {
+        const row = document.createElement('div');
+        row.className = "flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-200/60 text-sm";
+        
+        const isSuccess = item.status === "Correct";
+        const badgeColor = isSuccess ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700";
+        
+        row.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-slate-700">${item.word}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-500">${item.attempts} attempts</span>
+            <span class="px-2 py-0.5 rounded-full text-xs font-bold ${badgeColor}">${item.status}</span>
+          </div>
+        `;
+        statsList.appendChild(row);
+      });
+    }
+
+    // Chơi lại từ đầu
+    function restartGame() {
+      document.getElementById('score-screen').classList.add('hidden');
+      startGame();
+    }
+
+    /* ==========================================================================
+       7. HỖ TRỢ PHÍM GÕ VÀ SỰ KIỆN KHÁC (KEYBOARD & GENERAL EVENTS)
+       ========================================================================== */
+
+    // Lắng nghe sự kiện bàn phím giúp máy tính thao tác siêu tốc
+    document.addEventListener('keydown', (event) => {
+      // Bỏ qua nếu màn hình chào mừng hoặc màn hình điểm số đang mở
+      if (!document.getElementById('start-screen').classList.contains('hidden')) return;
+      if (!document.getElementById('score-screen').classList.contains('hidden')) return;
+
+      const key = event.key;
+
+      // Nhấn Enter để kiểm tra hoặc đi tiếp câu tiếp theo
+      if (key === 'Enter') {
+        event.preventDefault();
+        const nextBtn = document.getElementById('next-btn');
+        if (!nextBtn.classList.contains('hidden')) {
+          nextBtn.click();
+        } else {
+          checkAnswer();
+        }
+        return;
+      }
+
+      // Nhấn Backspace để xóa ký tự vừa điền gần nhất (hất ra ngoài)
+      if (key === 'Backspace') {
+        event.preventDefault();
+        // Tìm chữ đã lắp cuối cùng từ phải qua trái
+        for (let i = filledSlots.length - 1; i >= 0; i--) {
+          if (filledSlots[i] !== null) {
+            returnLetterToPool(i);
+            break;
+          }
+        }
+        return;
+      }
+
+      // Phím chữ cái (A-Z) để chọn tương ứng trong Pool chữ
+      if (/^[a-zA-Z]$/.test(key)) {
+        // Tìm chữ cái có ký tự trùng khớp trong shuffledLetters chưa được chọn
+        const foundItem = shuffledLetters.find(item => 
+          item.char.toLowerCase() === key.toLowerCase() && !item.selected
+        );
+        if (foundItem) {
+          selectLetter(foundItem);
+        }
+      }
+    });
+
+    // Sự kiện tải giọng nói chuẩn của hệ thống Web Speech
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = function() {
+        // Trình duyệt sẽ cập nhật giọng nói của máy tại đây để sẳn sàng phát
+      };
+    }
+  </script>
+</body>
+</html>
