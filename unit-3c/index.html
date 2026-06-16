@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Vocabulary & Listening Practice</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #f0f9ff;
+        }
+        .title-font {
+            font-family: 'Fredoka One', cursive;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between text-slate-800">
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md py-4 px-6 sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <h1 class="title-font text-2xl tracking-wider cursor-pointer flex items-center gap-2" onclick="location.reload()">
+                <span>🎓</span> Learn English!
+            </h1>
+            <div class="flex items-center gap-4 text-sm font-semibold">
+                <div class="bg-white/20 px-3 py-1.5 rounded-full" id="progress-indicator">
+                    Progress: 0/0
+                </div>
+                <div class="bg-amber-400 text-slate-900 px-3 py-1.5 rounded-full flex items-center gap-1">
+                    <span>⭐</span> <span id="score-counter">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow max-w-4xl w-full mx-auto p-4 md:p-6 flex flex-col justify-center items-center">
+        
+        <!-- Welcome / Start Screen -->
+        <div id="start-screen" class="bg-white rounded-3xl shadow-xl p-8 text-center max-w-md w-full border-4 border-indigo-100 transition duration-300">
+            <div class="text-6xl mb-4">🇬🇧</div>
+            <h2 class="title-font text-3xl text-indigo-600 mb-2">Practice Time!</h2>
+            <p class="text-slate-500 mb-6">Master vocabulary, sentence structure, and listening skills with our interactive exercises.</p>
+            
+            <button onclick="startGame()" class="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-lg rounded-2xl shadow-lg shadow-teal-500/30 hover:scale-[1.02] transition active:scale-[0.98]">
+                Start Learning Now
+            </button>
+        </div>
+
+        <!-- Quiz Container (Hidden initially) -->
+        <div id="quiz-screen" class="hidden w-full flex flex-col gap-6">
+            
+            <!-- Question Box -->
+            <div class="bg-white rounded-3xl shadow-xl p-6 md:p-8 border border-slate-100 relative overflow-hidden">
+                <!-- Part Tag -->
+                <div class="absolute top-4 left-4">
+                    <span id="part-tag" class="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full text-white bg-indigo-500">
+                        Part 1: Spelling
+                    </span>
+                </div>
+
+                <!-- Life Counter -->
+                <div class="absolute top-4 right-4 flex items-center gap-1 bg-rose-50 text-rose-600 px-3 py-1 rounded-full font-bold text-sm">
+                    <span>❤️</span> <span id="lives-counter">3</span> / 3
+                </div>
+
+                <!-- Main Content Area of Question -->
+                <div class="mt-8 flex flex-col items-center">
+                    
+                    <!-- Part 1: Visual Container (Only for Part 1) -->
+                    <div id="p1-visual" class="w-full max-w-sm mb-6 flex flex-col items-center justify-center">
+                        <div class="w-full h-48 md:h-56 bg-slate-100 rounded-2xl overflow-hidden relative border border-slate-200 flex items-center justify-center shadow-inner">
+                            <img id="vocab-image" src="" alt="Vocabulary Item" class="w-full h-full object-contain">
+                            <div id="vocab-emoji" class="hidden text-8xl transition duration-200">💰</div>
+                        </div>
+                    </div>
+
+                    <!-- Audio Trigger Section -->
+                    <div class="flex items-center gap-3 mb-6">
+                        <button onclick="speakCurrentWord()" class="flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 active:scale-95 text-indigo-600 font-bold px-5 py-3 rounded-2xl transition">
+                            <svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M12 18.75V5.25L7.75 9.5H4.5v5h3.25L12 18.75z"/></svg>
+                            <span>Listen</span>
+                        </button>
+                    </div>
+
+                    <!-- Answer Area (Blanks/Boxes to fill) -->
+                    <div class="w-full text-center mb-6">
+                        <p class="text-xs font-bold text-slate-400 tracking-wider uppercase mb-3">Your Answer</p>
+                        <!-- Dynamic Slot / Letter Container -->
+                        <div id="answer-slots" class="flex flex-wrap justify-center gap-2 min-h-[60px] p-3 rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200">
+                            <!-- Answer items will sit here -->
+                        </div>
+                    </div>
+
+                    <!-- Choice Letters / Words Area -->
+                    <div class="w-full text-center mb-6" id="choices-section">
+                        <p class="text-xs font-bold text-slate-400 tracking-wider uppercase mb-3">Pick Elements Below</p>
+                        <div id="choices-pool" class="flex flex-wrap justify-center gap-2 min-h-[50px]">
+                            <!-- Choices will sit here -->
+                        </div>
+                    </div>
+
+                    <!-- Feedback message (Success / Error / Answer reveal) -->
+                    <div id="feedback" class="hidden w-full text-center p-4 rounded-2xl font-bold mb-6 transition-all duration-300">
+                        Content text here
+                    </div>
+
+                    <!-- Control Buttons -->
+                    <div class="w-full flex flex-col sm:flex-row gap-3 justify-center items-center mt-2">
+                        <button id="btn-check" onclick="checkAnswer()" class="w-full sm:w-auto px-10 py-4 bg-indigo-600 text-white font-bold text-lg rounded-2xl shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 transition active:scale-95">
+                            Check (Enter)
+                        </button>
+                        <button id="btn-reset" onclick="resetCurrentQuestion()" class="w-full sm:w-auto px-6 py-4 bg-slate-100 text-slate-600 font-bold text-lg rounded-2xl hover:bg-slate-200 transition">
+                            Reset
+                        </button>
+                        <button id="btn-next" onclick="nextQuestion()" class="hidden w-full sm:w-auto px-10 py-4 bg-emerald-500 text-white font-bold text-lg rounded-2xl shadow-lg shadow-emerald-500/30 hover:bg-emerald-600 transition active:scale-95 animate-bounce">
+                            Next ➔
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Result / Statistics Screen -->
+        <div id="result-screen" class="hidden bg-white rounded-3xl shadow-xl p-8 text-center max-w-lg w-full border-4 border-indigo-100">
+            <div class="text-6xl mb-4">🏆</div>
+            <h2 class="title-font text-3xl text-indigo-600 mb-2">Excellent Effort!</h2>
+            <p class="text-slate-500 mb-6">You have completed all exercises. Here are your stats:</p>
+            
+            <div class="grid grid-cols-2 gap-4 mb-8">
+                <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
+                    <span class="block text-2xl font-bold text-emerald-600" id="res-correct">0</span>
+                    <span class="text-xs font-semibold text-emerald-500 uppercase tracking-wider">Correct Answers</span>
+                </div>
+                <div class="bg-rose-50 p-4 rounded-2xl border border-rose-100">
+                    <span class="block text-2xl font-bold text-rose-600" id="res-wrong">0</span>
+                    <span class="text-xs font-semibold text-rose-500 uppercase tracking-wider">Total Mistakes</span>
+                </div>
+            </div>
+
+            <button onclick="startGame()" class="w-full py-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold text-lg rounded-2xl shadow-lg shadow-indigo-500/30 hover:scale-[1.02] transition active:scale-[0.98]">
+                Practice Again
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-100 border-t border-slate-200 py-4 text-center text-xs text-slate-400">
+        <p>&copy; 2026 ESL Practice Suite. Speech synthesis uses your browser's native capabilities.</p>
+    </footer>
+
+    <!-- Audio Effects Generator using Web Audio API (No external file requirements!) -->
+    <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(type) {
+            // Ensure audio context is running (for browser security)
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            if (type === 'success') {
+                // Happy chord progression (C major arpeggio feel)
+                const now = audioCtx.currentTime;
+                osc.type = 'triangle';
+                
+                osc.frequency.setValueAtTime(261.63, now); // C4
+                osc.frequency.setValueAtTime(329.63, now + 0.1); // E4
+                osc.frequency.setValueAtTime(392.00, now + 0.2); // G4
+                osc.frequency.setValueAtTime(523.25, now + 0.3); // C5
+                
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.15, now + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+                
+                osc.start(now);
+                osc.stop(now + 0.6);
+            } else if (type === 'fail') {
+                // Downward buzzer sound
+                const now = audioCtx.currentTime;
+                osc.type = 'sawtooth';
+                
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(80, now + 0.3);
+                
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.15, now + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+                
+                osc.start(now);
+                osc.stop(now + 0.35);
+            }
+        }
+    </script>
+
+    <!-- App Logic Script -->
+    <script>
+        // Data Sources
+        const PART1_DATA = [
+            { id: 'p1_1', word: 'Dollar', emoji: '💵' },
+            { id: 'p1_2', word: 'Euro', emoji: '💶' },
+            { id: 'p1_3', word: 'Pound', emoji: '💷' },
+            { id: 'p1_4', word: 'Pence', emoji: '🪙' },
+            { id: 'p1_5', word: 'Cent', emoji: '🪙' },
+            { id: 'p1_6', word: 'Cappuccino', image: 'https://cafedidong.vn/wp-content/uploads/2018/07/cappuccino.jpg?auto=format&fit=crop&w=600&q=80', emoji: '☕' },
+            { id: 'p1_7', word: 'Espresso', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Tazzina_di_caff%C3%A8_a_Ventimiglia.jpg/1280px-Tazzina_di_caff%C3%A8_a_Ventimiglia.jpg?auto=format&fit=crop&w=600&q=80', emoji: '☕' },
+            { id: 'p1_8', word: 'Coke', image: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=600&q=80', emoji: '🥤' },
+            { id: 'p1_9', word: 'Croissant', image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=600&q=80', emoji: '🥐' }
+        ];
+
+        const PART2_DATA = [
+            { id: 'p2_1', sentence: 'How much is it?', words: ['How', 'much', 'is', 'it?'] },
+            { id: 'p2_2', sentence: 'How much is a coffee and a croissant?', words: ['How', 'much', 'is', 'a', 'coffee', 'and', 'a', 'croissant?'] },
+            { id: 'p2_3', sentence: 'How much are the pens?', words: ['How', 'much', 'are', 'the', 'pens?'] },
+            { id: 'p2_4', sentence: 'How much are they?', words: ['How', 'much', 'are', 'they?'] }
+        ];
+
+        const PART3_DATA = [
+            { id: 'p3_1', value: '$6.75', text: 'six dollars and seventy five cents', choices: ['$6.75', '$5.67', '$6.57', '$7.65'] },
+            { id: 'p3_2', value: '€12.20', text: 'twelve euros and twenty cents', choices: ['€12.20', '€2.20', '€12.02', '€20.12'] },
+            { id: 'p3_3', value: '$11.30', text: 'eleven dollars and thirty cents', choices: ['$11.30', '$1.30', '$11.13', '$13.11'] },
+            { id: 'p3_4', value: '£4.55', text: 'four pounds and fifty five pence', choices: ['£4.55', '£4.05', '£5.45', '£14.55'] }
+        ];
+
+        const CONGRATS_LIST = ["Well done", "Good job", "Excellent", "Very good"];
+
+        // State variables
+        let questions = [];
+        let currentIdx = 0;
+        let incorrectCount = 0; // Number of failed attempts for the current active question
+        let totalMistakes = 0; // Global score tracking for mistakes
+        let totalCorrect = 0; // Global score tracking for correct items
+        let userAssembly = []; // Holds items currently selected by user for dynamic ordering
+        let completedQuestionsCount = 0;
+
+        // TTS setup
+        let synthesisVoice = null;
+        
+        function initVoice() {
+            if ('speechSynthesis' in window) {
+                // Trigger an initial, quiet load of voices if possible
+                window.speechSynthesis.getVoices();
+                setTimeout(() => {
+                    const voices = window.speechSynthesis.getVoices();
+                    // Prefer English female voices
+                    synthesisVoice = voices.find(v => 
+                        (v.lang.startsWith('en') && v.name.toLowerCase().includes('female')) ||
+                        (v.lang.startsWith('en') && v.name.toLowerCase().includes('zira')) || 
+                        (v.lang.startsWith('en') && v.name.toLowerCase().includes('google')) || 
+                        v.lang.startsWith('en')
+                    ) || voices[0];
+                }, 300);
+            }
+        }
+
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                // Cancel active speeches
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                if (synthesisVoice) {
+                    utterance.voice = synthesisVoice;
+                }
+                utterance.rate = 0.85; // Speak slowly and clearly as requested
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Initialize voice settings
+        initVoice();
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = initVoice;
+        }
+
+        // Utility to shuffle arrays
+        function shuffleArray(arr) {
+            return arr.map(value => ({ value, sort: Math.random() }))
+                .sort((a, b) => a.sort - b.sort)
+                .map(({ value }) => value);
+        }
+
+        // Start Application / Restart Loop
+        function startGame() {
+            // Prep randomized questions
+            const shuffledP1 = shuffleArray([...PART1_DATA]).map(item => ({ ...item, type: 'spelling' }));
+            const shuffledP2 = shuffleArray([...PART2_DATA]).map(item => ({ ...item, type: 'sentence' }));
+            const shuffledP3 = shuffleArray([...PART3_DATA]).map(item => ({ ...item, type: 'listening' }));
+
+            // Combine all three sections
+            questions = [...shuffledP1, ...shuffledP2, ...shuffledP3];
+            
+            // Fully shuffle all questions so order changes completely every time
+            questions = shuffleArray(questions);
+
+            currentIdx = 0;
+            totalMistakes = 0;
+            totalCorrect = 0;
+            completedQuestionsCount = 0;
+
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+
+            updateOverallProgress();
+            loadQuestion();
+        }
+
+        function updateOverallProgress() {
+            document.getElementById('progress-indicator').textContent = `Progress: ${completedQuestionsCount}/${questions.length}`;
+            document.getElementById('score-counter').textContent = totalCorrect;
+        }
+
+        // Main display logic for current question
+        function loadQuestion() {
+            incorrectCount = 0;
+            userAssembly = [];
+            
+            const question = questions[currentIdx];
+            if (!question) return;
+            
+            // Reset control states
+            document.getElementById('btn-check').classList.remove('hidden');
+            document.getElementById('btn-reset').classList.remove('hidden');
+            document.getElementById('btn-next').classList.add('hidden');
+            
+            const feedbackEl = document.getElementById('feedback');
+            feedbackEl.classList.add('hidden');
+            feedbackEl.className = "hidden w-full text-center p-4 rounded-2xl font-bold mb-6 transition-all duration-300";
+
+            document.getElementById('lives-counter').textContent = (3 - incorrectCount);
+
+            // Conditional layout depending on Part Type
+            if (question.type === 'spelling') {
+                document.getElementById('part-tag').textContent = "Part 1: Spelling";
+                document.getElementById('part-tag').className = "text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full text-white bg-indigo-500";
+                document.getElementById('p1-visual').classList.remove('hidden');
+                
+                // Load images and configure fallback dynamically in JS to prevent ReferenceError
+                const vocabImg = document.getElementById('vocab-image');
+                const vocabEmoji = document.getElementById('vocab-emoji');
+                vocabImg.classList.remove('hidden');
+                vocabEmoji.classList.add('hidden');
+                
+                // Assign error handler via JavaScript before changing src
+                vocabImg.onerror = handleImageError;
+                vocabImg.src = question.image;
+                vocabEmoji.textContent = question.emoji;
+
+                buildSpellingWorkspace(question.word);
+            } else if (question.type === 'sentence') {
+                document.getElementById('part-tag').textContent = "Part 2: Word Order";
+                document.getElementById('part-tag').className = "text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full text-white bg-amber-500";
+                document.getElementById('p1-visual').classList.add('hidden');
+
+                buildSentenceWorkspace(question.words);
+            } else if (question.type === 'listening') {
+                document.getElementById('part-tag').textContent = "Part 3: Price Listening";
+                document.getElementById('part-tag').className = "text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full text-white bg-rose-500";
+                document.getElementById('p1-visual').classList.add('hidden');
+
+                buildListeningWorkspace(question.choices);
+            }
+
+            // Play the dynamic sound automatically when loaded
+            setTimeout(() => {
+                speakCurrentWord();
+            }, 500);
+        }
+
+        // Image loading backup
+        function handleImageError() {
+            document.getElementById('vocab-image').classList.add('hidden');
+            document.getElementById('vocab-emoji').classList.remove('hidden');
+        }
+
+        // Trigger TTS pronunciation
+        function speakCurrentWord() {
+            const question = questions[currentIdx];
+            if (!question) return;
+            if (question.type === 'spelling') {
+                speakText(question.word);
+            } else if (question.type === 'sentence') {
+                speakText(question.sentence);
+            } else if (question.type === 'listening') {
+                speakText(question.text);
+            }
+        }
+
+        // Builder: Part 1 - Spelling
+        function buildSpellingWorkspace(word) {
+            const cleanedWord = word.trim();
+            const letters = cleanedWord.split('');
+            const scrambled = shuffleArray([...letters]);
+
+            // Setup Target Answer Slots
+            const answerSlots = document.getElementById('answer-slots');
+            answerSlots.innerHTML = '';
+            for (let i = 0; i < letters.length; i++) {
+                const slot = document.createElement('div');
+                slot.className = "w-10 h-10 md:w-12 md:h-12 border-2 border-slate-300 rounded-xl flex items-center justify-center text-lg md:text-xl font-bold bg-white text-slate-700 cursor-pointer transition hover:bg-rose-50 hover:border-rose-300";
+                slot.dataset.index = i;
+                slot.onclick = () => removeLetter(i);
+                answerSlots.appendChild(slot);
+            }
+
+            // Setup Choice Pool Elements
+            renderChoicesPool(scrambled, 'letter');
+        }
+
+        // Builder: Part 2 - Sentences
+        function buildSentenceWorkspace(words) {
+            const scrambled = shuffleArray([...words]);
+
+            // Setup Answer Slots
+            const answerSlots = document.getElementById('answer-slots');
+            answerSlots.innerHTML = '';
+            for (let i = 0; i < words.length; i++) {
+                const slot = document.createElement('div');
+                slot.className = "px-3 py-2 border-2 border-slate-300 rounded-xl flex items-center justify-center text-sm md:text-base font-semibold bg-white text-slate-700 cursor-pointer min-w-[50px] min-h-[44px] transition hover:bg-rose-50 hover:border-rose-300";
+                slot.dataset.index = i;
+                slot.onclick = () => removeWord(i);
+                answerSlots.appendChild(slot);
+            }
+
+            // Setup Choice Pool Elements
+            renderChoicesPool(scrambled, 'word');
+        }
+
+        // Builder: Part 3 - Listening Choices (Normal Radio/Selector style)
+        function buildListeningWorkspace(choices) {
+            const scrambled = shuffleArray([...choices]);
+
+            const answerSlots = document.getElementById('answer-slots');
+            answerSlots.innerHTML = `
+                <div class="text-sm font-semibold text-indigo-500 py-1 flex items-center gap-2">
+                    <span>🔊</span> Audio is auto-playing. Select the correct price tag.
+                </div>
+            `;
+
+            // Listening uses direct single option select
+            renderChoicesPool(scrambled, 'choice');
+        }
+
+        // Helper to output pool of tiles
+        function renderChoicesPool(items, itemType) {
+            const pool = document.getElementById('choices-pool');
+            pool.innerHTML = '';
+
+            items.forEach((item, originalIndex) => {
+                const button = document.createElement('button');
+                button.className = "px-4 py-2.5 bg-indigo-50 hover:bg-indigo-100 active:scale-95 text-indigo-700 font-bold text-sm md:text-base rounded-xl transition shadow-sm border border-indigo-100 flex items-center justify-center";
+                button.textContent = item;
+                
+                // Define actions based on type
+                if (itemType === 'letter') {
+                    button.onclick = () => selectLetter(item, button);
+                } else if (itemType === 'word') {
+                    button.onclick = () => selectWord(item, button);
+                } else if (itemType === 'choice') {
+                    button.className = "px-6 py-3.5 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-700 active:scale-95 text-slate-700 font-bold text-lg rounded-xl transition border border-slate-200 shadow-sm min-w-[120px]";
+                    button.onclick = () => selectChoice(item, button);
+                }
+                
+                pool.appendChild(button);
+            });
+        }
+
+        // Interaction functions: Adding/Removing letters
+        function selectLetter(letter, buttonEl) {
+            const question = questions[currentIdx];
+            if (!question || question.type !== 'spelling') return;
+            if (!document.getElementById('btn-next').classList.contains('hidden')) return;
+
+            const limit = question.word.length;
+            
+            if (userAssembly.length < limit) {
+                // Record state
+                userAssembly.push({ char: letter, elRef: buttonEl });
+                // Make source invisible
+                buttonEl.classList.add('opacity-30', 'pointer-events-none');
+                
+                updateSpellingSlots();
+            }
+        }
+
+        function removeLetter(slotIndex) {
+            const question = questions[currentIdx];
+            if (!question || question.type !== 'spelling') return;
+            if (!document.getElementById('btn-next').classList.contains('hidden')) return;
+
+            if (userAssembly[slotIndex]) {
+                const targeted = userAssembly[slotIndex];
+                // Restore original source visibility
+                targeted.elRef.classList.remove('opacity-30', 'pointer-events-none');
+                // Erase from answers
+                userAssembly.splice(slotIndex, 1);
+                
+                updateSpellingSlots();
+            }
+        }
+
+        function updateSpellingSlots() {
+            const slots = document.getElementById('answer-slots').children;
+            // Clear current states
+            for (let i = 0; i < slots.length; i++) {
+                slots[i].textContent = '';
+                slots[i].classList.remove('bg-indigo-50', 'border-indigo-500', 'text-indigo-600');
+            }
+            // Fill with active selections
+            userAssembly.forEach((item, index) => {
+                if (slots[index]) {
+                    slots[index].textContent = item.char;
+                    slots[index].classList.add('bg-indigo-50', 'border-indigo-500', 'text-indigo-600');
+                }
+            });
+        }
+
+        // Interaction functions: Adding/Removing words (Part 2)
+        function selectWord(word, buttonEl) {
+            const question = questions[currentIdx];
+            if (!question || question.type !== 'sentence') return;
+            if (!document.getElementById('btn-next').classList.contains('hidden')) return;
+
+            const limit = question.words.length;
+            
+            if (userAssembly.length < limit) {
+                userAssembly.push({ wordText: word, elRef: buttonEl });
+                buttonEl.classList.add('opacity-30', 'pointer-events-none');
+                updateWordSlots();
+            }
+        }
+
+        function removeWord(slotIndex) {
+            const question = questions[currentIdx];
+            if (!question || question.type !== 'sentence') return;
+            if (!document.getElementById('btn-next').classList.contains('hidden')) return;
+
+            if (userAssembly[slotIndex]) {
+                const targeted = userAssembly[slotIndex];
+                targeted.elRef.classList.remove('opacity-30', 'pointer-events-none');
+                userAssembly.splice(slotIndex, 1);
+                updateWordSlots();
+            }
+        }
+
+        function updateWordSlots() {
+            const slots = document.getElementById('answer-slots').children;
+            // Clear and restore original slots format
+            for (let i = 0; i < slots.length; i++) {
+                slots[i].textContent = '';
+                slots[i].classList.remove('bg-indigo-50', 'border-indigo-500', 'text-indigo-600');
+            }
+            userAssembly.forEach((item, index) => {
+                if (slots[index]) {
+                    slots[index].textContent = item.wordText;
+                    slots[index].classList.add('bg-indigo-50', 'border-indigo-500', 'text-indigo-600');
+                }
+            });
+        }
+
+        // Interaction functions: Selecting simple price choice (Part 3)
+        function selectChoice(choice, buttonEl) {
+            const question = questions[currentIdx];
+            if (!question || question.type !== 'listening') return;
+            if (!document.getElementById('btn-next').classList.contains('hidden')) return;
+
+            // Highlight chosen item exclusively
+            const siblings = buttonEl.parentNode.children;
+            for (let sibling of siblings) {
+                sibling.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-600', 'hover:bg-indigo-50');
+                sibling.classList.add('bg-slate-50', 'text-slate-700', 'border-slate-200');
+            }
+            buttonEl.classList.remove('bg-slate-50', 'text-slate-700', 'border-slate-200');
+            buttonEl.classList.add('bg-indigo-600', 'text-white', 'border-indigo-600');
+
+            // Listening saves selection string
+            userAssembly = [choice];
+        }
+
+        // Reset the active layout
+        function resetCurrentQuestion() {
+            // Re-render components
+            const question = questions[currentIdx];
+            if (!question) return;
+            userAssembly = [];
+            
+            if (question.type === 'spelling') {
+                buildSpellingWorkspace(question.word);
+            } else if (question.type === 'sentence') {
+                buildSentenceWorkspace(question.words);
+            } else if (question.type === 'listening') {
+                buildListeningWorkspace(question.choices);
+            }
+
+            // Clear visual checks
+            const feedbackEl = document.getElementById('feedback');
+            feedbackEl.classList.add('hidden');
+        }
+
+        // Checking answer & tracking attempts
+        function checkAnswer() {
+            const question = questions[currentIdx];
+            if (!question) return;
+            let isCorrect = false;
+            let currentAnswerText = "";
+
+            if (question.type === 'spelling') {
+                const combined = userAssembly.map(item => item.char).join('');
+                currentAnswerText = question.word;
+                isCorrect = (combined.toLowerCase() === question.word.toLowerCase());
+            } else if (question.type === 'sentence') {
+                const combined = userAssembly.map(item => item.wordText).join(' ');
+                currentAnswerText = question.sentence;
+                isCorrect = (combined.toLowerCase() === question.sentence.toLowerCase());
+            } else if (question.type === 'listening') {
+                const selected = userAssembly[0];
+                currentAnswerText = question.value;
+                isCorrect = (selected === question.value);
+            }
+
+            const feedbackEl = document.getElementById('feedback');
+            feedbackEl.classList.remove('hidden');
+
+            if (isCorrect) {
+                handleSuccess();
+            } else {
+                handleFailure(currentAnswerText);
+            }
+        }
+
+        // Action when student solves correctly
+        function handleSuccess() {
+            totalCorrect++;
+            completedQuestionsCount++;
+            updateOverallProgress();
+
+            playSound('success');
+
+            // Pick a random motivation praise phrase
+            const praise = CONGRATS_LIST[Math.floor(Math.random() * CONGRATS_LIST.length)];
+            speakText(praise);
+
+            // Display Feedback banner
+            const feedbackEl = document.getElementById('feedback');
+            feedbackEl.className = "w-full text-center p-4 rounded-2xl font-bold mb-6 text-emerald-700 bg-emerald-50 border border-emerald-200 transition-all duration-300";
+            feedbackEl.innerHTML = `<span class="text-xl">🎉 ${praise}!</span><br><span class="text-sm font-medium">Your answer is correct!</span>`;
+
+            // Lock interactions, show Next button
+            document.getElementById('btn-check').classList.add('hidden');
+            document.getElementById('btn-reset').classList.add('hidden');
+            document.getElementById('btn-next').classList.remove('hidden');
+        }
+
+        // Action when answer is wrong
+        function handleFailure(correctAnswerText) {
+            incorrectCount++;
+            totalMistakes++;
+            playSound('fail');
+
+            document.getElementById('lives-counter').textContent = (3 - incorrectCount);
+
+            const feedbackEl = document.getElementById('feedback');
+            
+            if (incorrectCount >= 3) {
+                // Maximum attempts hit - reveal target key directly
+                completedQuestionsCount++;
+                updateOverallProgress();
+
+                speakText("The correct answer is displayed below.");
+                feedbackEl.className = "w-full text-center p-4 rounded-2xl font-bold mb-6 text-amber-700 bg-amber-50 border border-amber-200 transition-all duration-300";
+                feedbackEl.innerHTML = `<span class="text-xl">❌ Out of lives!</span><br><span class="text-sm font-medium">The correct answer is: <strong class="text-base text-amber-900">${correctAnswerText}</strong></span>`;
+                
+                // Advance control lockouts
+                document.getElementById('btn-check').classList.add('hidden');
+                document.getElementById('btn-reset').classList.add('hidden');
+                document.getElementById('btn-next').classList.remove('hidden');
+            } else {
+                // Show standard try again dialog and auto reset assembly logic
+                speakText("Try again.");
+                feedbackEl.className = "w-full text-center p-4 rounded-2xl font-bold mb-6 text-rose-700 bg-rose-50 border border-rose-200 transition-all duration-300";
+                feedbackEl.innerHTML = `<span class="text-xl">❌ Incorrect!</span><br><span class="text-sm font-medium">Please try again. (${3 - incorrectCount} lives left)</span>`;
+                
+                // Auto reset input choice assembly dynamically as requested
+                setTimeout(() => {
+                    resetCurrentQuestion();
+                }, 1000);
+            }
+        }
+
+        // Switch layout to next item or wrap up game statistics
+        function nextQuestion() {
+            currentIdx++;
+            if (currentIdx < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        // Complete Screen Layout
+        function showResults() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            
+            document.getElementById('res-correct').textContent = totalCorrect;
+            document.getElementById('res-wrong').textContent = totalMistakes;
+
+            speakText("Congratulations! You have completed all exercises.");
+        }
+
+        // Hotkey hook logic (Enter key for swift confirmation on Desktop)
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                // Verify screen is active
+                const quizVisible = !document.getElementById('quiz-screen').classList.contains('hidden');
+                if (quizVisible) {
+                    const checkBtn = document.getElementById('btn-check');
+                    const nextBtn = document.getElementById('btn-next');
+                    
+                    // Trigger next if it's active, otherwise verify answer
+                    if (!nextBtn.classList.contains('hidden')) {
+                        nextQuestion();
+                    } else if (!checkBtn.classList.contains('hidden')) {
+                        checkAnswer();
+                    }
+                } else {
+                    const startVisible = !document.getElementById('start-screen').classList.contains('hidden');
+                    const endVisible = !document.getElementById('result-screen').classList.contains('hidden');
+                    if (startVisible) {
+                        startGame();
+                    } else if (endVisible) {
+                        startGame();
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
