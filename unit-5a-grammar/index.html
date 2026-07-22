@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Present Simple Master: He / She / It Rules</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .option-card {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .option-card:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.12);
+        }
+        .option-card.selected {
+            border-color: #6366f1;
+            background: rgba(99, 102, 241, 0.2);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+        }
+        @keyframes pulse-subtle {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.85; transform: scale(0.98); }
+        }
+        .animate-pulse-subtle {
+            animation: pulse-subtle 2s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="text-slate-100 flex flex-col justify-between p-3 sm:p-6 min-h-screen">
+
+    <!-- Header Bar -->
+    <header class="max-w-4xl mx-auto w-full flex justify-between items-center py-4 px-2 mb-4">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                <i class="fa-solid fa-graduation-cap text-xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-purple-300 to-pink-300">
+                    Grammar Master
+                </h1>
+                <p class="text-xs text-indigo-200/70">Present Simple Tense (He / She / It)</p>
+            </div>
+        </div>
+        
+        <!-- Speech Voice Status Indicator -->
+        <div id="voice-indicator" class="hidden sm:flex items-center space-x-2 bg-white/10 px-3 py-1.5 rounded-full text-xs text-slate-300">
+            <i class="fa-solid fa-volume-high text-indigo-400"></i>
+            <span id="voice-name">Female Voice Active</span>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto w-full flex-grow flex flex-col justify-center my-auto">
+        
+        <!-- ================= VIEW 1: THEORY REVIEW ================= -->
+        <section id="view-theory" class="glass-card rounded-3xl p-5 sm:p-8 shadow-2xl mb-6 transition-all duration-300">
+            <div class="text-center mb-6">
+                <span class="inline-block px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-semibold uppercase tracking-wider mb-2">
+                    Pre-Practice Study Guide
+                </span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Verb Conjugation Rules: He / She / It</h2>
+                <p class="text-sm text-slate-300 mt-2">Review the theoretical guide below before starting your quiz.</p>
+            </div>
+
+            <!-- Theory Image Container -->
+            <div class="flex justify-center mb-8">
+                <div class="relative group max-w-2xl w-full bg-slate-900/80 p-2 sm:p-3 rounded-2xl border border-slate-700/80 shadow-2xl overflow-hidden">
+                    <img 
+                        src="image_1d72bf.jpg" 
+                        onerror="this.onerror=null; this.src='grammar-rules.jpg';" 
+                        alt="Present Simple Rules - He / She / It" 
+                        class="w-full h-auto rounded-xl object-contain mx-auto transition-transform duration-300 group-hover:scale-[1.01]"
+                    />
+                    <div class="mt-3 text-center text-xs text-slate-400">
+                        <i class="fa-solid fa-circle-info mr-1 text-indigo-400"></i>
+                        <span>Ensure the image file (<code class="bg-slate-800 px-1.5 py-0.5 rounded text-indigo-300 font-mono">image_1d72bf.jpg</code>) is in the same folder as <code class="bg-slate-800 px-1.5 py-0.5 rounded text-indigo-300 font-mono">index.html</code> on GitHub Pages.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Start Button -->
+            <div class="text-center">
+                <button id="btn-start-quiz" onclick="startQuiz()" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold rounded-2xl shadow-xl shadow-indigo-500/25 transition transform active:scale-95 flex items-center justify-center space-x-3 text-lg mx-auto">
+                    <span>Start Practice Quiz</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= VIEW 2: QUIZ INTERFACE ================= -->
+        <section id="view-quiz" class="hidden glass-card rounded-3xl p-4 sm:p-8 shadow-2xl transition-all duration-300">
+            
+            <!-- Progress Bar and Counter -->
+            <div class="flex justify-between items-center text-xs font-semibold text-slate-300 mb-2">
+                <span id="quiz-progress-text">Question 1 of 14</span>
+                <span id="quiz-attempt-badge" class="px-2.5 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300">
+                    Attempt: 1 / 3
+                </span>
+            </div>
+            
+            <div class="w-full bg-slate-800 rounded-full h-2.5 mb-6 overflow-hidden border border-slate-700">
+                <div id="quiz-progress-bar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-2.5 rounded-full transition-all duration-500 w-0"></div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="bg-slate-900/80 rounded-2xl p-5 sm:p-6 mb-6 border border-slate-700/80 relative">
+                <div class="flex justify-between items-start gap-4">
+                    <div class="space-y-2">
+                        <span class="text-xs font-bold text-indigo-400 uppercase tracking-wider">Fill in the blank</span>
+                        <h3 id="question-text" class="text-lg sm:text-xl font-bold text-white leading-relaxed">
+                            Loading question...
+                        </h3>
+                    </div>
+                    
+                    <!-- Question Audio Button -->
+                    <button id="btn-read-question" onclick="speakCurrentQuestion()" title="Listen to Full Sentence" class="p-3 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 hover:text-white rounded-xl border border-indigo-500/30 transition flex-shrink-0 active:scale-90">
+                        <i class="fa-solid fa-volume-high text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MCQ Options Container -->
+            <div id="options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6">
+                <!-- Options injected dynamically by JS -->
+            </div>
+
+            <!-- Status & Feedback Area -->
+            <div id="feedback-box" class="hidden mb-6 p-4 rounded-2xl border transition-all text-sm flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div id="feedback-icon" class="text-xl"></div>
+                    <div>
+                        <div id="feedback-title" class="font-bold"></div>
+                        <div id="feedback-message" class="text-xs opacity-90 mt-0.5"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons Footer -->
+            <div class="flex flex-col sm:flex-row gap-3 justify-end items-center">
+                <div class="text-xs text-slate-400 hidden sm:block mr-auto">
+                    <i class="fa-solid fa-keyboard mr-1"></i> Press <kbd class="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-slate-200">Enter</kbd> to check or proceed
+                </div>
+
+                <button id="btn-check" onclick="checkAnswer()" disabled class="w-full sm:w-auto px-6 py-3.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-lg transition active:scale-95 flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>Check Answer</span>
+                </button>
+
+                <button id="btn-next" onclick="nextQuestion()" class="hidden w-full sm:w-auto px-6 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/30 transition active:scale-95 flex items-center justify-center space-x-2">
+                    <span>Next Question</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+
+        </section>
+
+        <!-- ================= VIEW 3: RESULTS SUMMARY ================= -->
+        <section id="view-results" class="hidden glass-card rounded-3xl p-6 sm:p-10 shadow-2xl text-center">
+            
+            <div class="w-20 h-20 bg-amber-500/20 text-amber-400 rounded-3xl border border-amber-500/30 flex items-center justify-center mx-auto mb-4 text-3xl shadow-xl">
+                <i class="fa-solid fa-trophy"></i>
+            </div>
+
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-white mb-2">Quiz Completed!</h2>
+            <p class="text-sm text-slate-300 mb-8">Here is your performance summary for Present Simple Tense.</p>
+
+            <!-- Stat Cards Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+                    <div class="text-xs text-slate-400 mb-1">Score</div>
+                    <div id="stat-score" class="text-3xl font-extrabold text-indigo-400">14 / 14</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+                    <div class="text-xs text-slate-400 mb-1">Accuracy</div>
+                    <div id="stat-accuracy" class="text-3xl font-extrabold text-emerald-400">100%</div>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+                    <div class="text-xs text-slate-400 mb-1">Total Incorrect Retries</div>
+                    <div id="stat-mistakes" class="text-3xl font-extrabold text-rose-400">0</div>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button onclick="reviewTheory()" class="px-6 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl border border-slate-700 transition flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-book-open"></i>
+                    <span>Review Theory</span>
+                </button>
+                <button onclick="startQuiz()" class="px-8 py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span>Try Again (New Shuffle)</span>
+                </button>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="max-w-4xl mx-auto w-full text-center py-4 text-xs text-slate-400/80">
+        Present Simple Grammar Exercise • Ready for GitHub Pages deployment
+    </footer>
+
+    <script>
+        /* ================= QUESTION DATABASE ================= */
+        const rawQuestions = [
+            {
+                id: 1,
+                prompt: "1. She __________ (work) at a hospital in London.",
+                options: ["works", "work", "working", "is work"],
+                answer: "works",
+                fullSentence: "She works at a hospital in London."
+            },
+            {
+                id: 2,
+                prompt: "2. He __________ (watch) the news every evening.",
+                options: ["watches", "watch", "watchs", "watching"],
+                answer: "watches",
+                fullSentence: "He watches the news every evening."
+            },
+            {
+                id: 3,
+                prompt: "3. My daughter __________ (study) English at night.",
+                options: ["studies", "studys", "study", "is study"],
+                answer: "studies",
+                fullSentence: "My daughter studies English at night."
+            },
+            {
+                id: 4,
+                prompt: "4. He __________ (play) football on Sundays.",
+                options: ["plays", "plaies", "play", "playing"],
+                answer: "plays",
+                fullSentence: "He plays football on Sundays."
+            },
+            {
+                id: 5,
+                prompt: "5. The cat __________ (catch) a mouse in the garden.",
+                options: ["catches", "catchs", "catch", "catching"],
+                answer: "catches",
+                fullSentence: "The cat catches a mouse in the garden."
+            },
+            {
+                id: 6,
+                prompt: "6. She __________ (have) breakfast at 7:00 AM.",
+                options: ["has", "haves", "have", "is have"],
+                answer: "has",
+                fullSentence: "She has breakfast at 7:00 AM."
+            },
+            {
+                id: 7,
+                prompt: "7. He __________ (not / like) cold weather.",
+                options: ["doesn't like", "don't like", "doesn't likes", "not like"],
+                answer: "doesn't like",
+                fullSentence: "He doesn't like cold weather."
+            },
+            {
+                id: 8,
+                prompt: "8. She __________ (not / go) to work by bus.",
+                options: ["doesn't go", "doesn't goes", "don't go", "not go"],
+                answer: "doesn't go",
+                fullSentence: "She doesn't go to work by bus."
+            },
+            {
+                id: 9,
+                prompt: "9. It __________ (not / rain) much in the summer here.",
+                options: ["doesn't rain", "doesn't rains", "don't rain", "not rain"],
+                answer: "doesn't rain",
+                fullSentence: "It doesn't rain much in the summer here."
+            },
+            {
+                id: 10,
+                prompt: "10. He __________ (not / wash) his car on weekdays.",
+                options: ["doesn't wash", "doesn't washes", "don't wash", "not wash"],
+                answer: "doesn't wash",
+                fullSentence: "He doesn't wash his car on weekdays."
+            },
+            {
+                id: 11,
+                prompt: "11. __________ she __________ (live) in a big house?",
+                options: ["Does ... live", "Do ... live", "Does ... lives", "Is ... live"],
+                answer: "Does ... live",
+                fullSentence: "Does she live in a big house?"
+            },
+            {
+                id: 12,
+                prompt: "12. __________ he __________ (fix) computers?",
+                options: ["Does ... fix", "Do ... fix", "Does ... fixes", "Is ... fix"],
+                answer: "Does ... fix",
+                fullSentence: "Does he fix computers?"
+            },
+            {
+                id: 13,
+                prompt: "13. What time __________ the train __________ (finish) its journey?",
+                options: ["does ... finish", "do ... finish", "does ... finishes", "is ... finish"],
+                answer: "does ... finish",
+                fullSentence: "What time does the train finish its journey?"
+            },
+            {
+                id: 14,
+                prompt: "14. Where __________ he __________ (buy) fresh vegetables?",
+                options: ["does ... buy", "do ... buy", "does ... buys", "is ... buy"],
+                answer: "does ... buy",
+                fullSentence: "Where does he buy fresh vegetables?"
+            }
+        ];
+
+        /* Praise Words Array */
+        const praiseList = ["Well done!", "Good job!", "Excellent!", "Very good!"];
+
+        /* Quiz State Variables */
+        let questions = [];
+        let currentIndex = 0;
+        let selectedOption = null;
+        let attemptCount = 0;
+        let totalMistakes = 0;
+        let correctCount = 0;
+        let isAnswerSubmitted = false;
+        let selectedFemaleVoice = null;
+
+        // Web Audio Synthesizer for SFX
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSoundEffect(type) {
+            try {
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const now = audioCtx.currentTime;
+                
+                if (type === 'correct') {
+                    // Upbeat major triad chime
+                    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                    notes.forEach((freq, idx) => {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+                        gain.gain.setValueAtTime(0.2, now + idx * 0.08);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.3);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start(now + idx * 0.08);
+                        osc.stop(now + idx * 0.08 + 0.3);
+                    });
+                } else if (type === 'wrong') {
+                    // Soft error low tone buzz
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(180, now);
+                    osc.frequency.exponentialRampToValueAtTime(90, now + 0.25);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                }
+            } catch (e) {
+                console.log("Audio FX error:", e);
+            }
+        }
+
+        // Voice Setup
+        function initVoice() {
+            if ('speechSynthesis' in window) {
+                const updateVoices = () => {
+                    const voices = window.speechSynthesis.getVoices();
+                    // Search for preferred female English voice
+                    selectedFemaleVoice = voices.find(v => 
+                        v.lang.startsWith('en') && (
+                            v.name.includes('Female') || 
+                            v.name.includes('Zira') || 
+                            v.name.includes('Samantha') || 
+                            v.name.includes('Google UK English Female') ||
+                            v.name.includes('Victoria') ||
+                            v.name.includes('Karen')
+                        )
+                    ) || voices.find(v => v.lang.startsWith('en'));
+
+                    if (selectedFemaleVoice) {
+                        const badge = document.getElementById('voice-name');
+                        if (badge) badge.innerText = `Voice: ${selectedFemaleVoice.name.split(' ')[0]}`;
+                    }
+                };
+
+                updateVoices();
+                window.speechSynthesis.onvoiceschanged = updateVoices;
+            }
+        }
+
+        // Speak function: slow and clear
+        function speakText(text, onEndCallback = null) {
+            if (!('speechSynthesis' in window)) return;
+            
+            window.speechSynthesis.cancel(); // Stop any playing audio
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 0.82; // Slow and clear pace
+            utterance.pitch = 1.05; // Friendly pitch
+            
+            if (selectedFemaleVoice) {
+                utterance.voice = selectedFemaleVoice;
+            }
+
+            if (onEndCallback) {
+                utterance.onend = onEndCallback;
+            }
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Utility to shuffle array randomly
+        function shuffleArray(arr) {
+            const array = [...arr];
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Start Quiz Procedure
+        function startQuiz() {
+            // Shuffle questions and options
+            questions = shuffleArray(rawQuestions).map(q => ({
+                ...q,
+                options: shuffleArray(q.options)
+            }));
+
+            currentIndex = 0;
+            totalMistakes = 0;
+            correctCount = 0;
+
+            document.getElementById('view-theory').classList.add('hidden');
+            document.getElementById('view-results').classList.add('hidden');
+            document.getElementById('view-quiz').classList.remove('hidden');
+
+            loadQuestion();
+        }
+
+        // Return to theory view
+        function reviewTheory() {
+            document.getElementById('view-quiz').classList.add('hidden');
+            document.getElementById('view-results').classList.add('hidden');
+            document.getElementById('view-theory').classList.remove('hidden');
+        }
+
+        function loadQuestion() {
+            isAnswerSubmitted = false;
+            selectedOption = null;
+            attemptCount = 0;
+
+            const q = questions[currentIndex];
+
+            // Update Progress
+            document.getElementById('quiz-progress-text').innerText = `Question ${currentIndex + 1} of ${questions.length}`;
+            const progressPercent = ((currentIndex + 1) / questions.length) * 100;
+            document.getElementById('quiz-progress-bar').style.width = `${progressPercent}%`;
+
+            // Reset Attempt Badge & Feedback
+            updateAttemptBadge();
+            hideFeedback();
+
+            // Render Prompt
+            document.getElementById('question-text').innerText = q.prompt;
+
+            // Render Options
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            q.options.forEach((opt, idx) => {
+                const optCard = document.createElement('div');
+                optCard.className = 'option-card glass-card border border-slate-700/80 rounded-2xl p-4 flex items-center justify-between cursor-pointer select-none';
+                optCard.onclick = (e) => selectOption(optCard, opt);
+
+                // Option text & choice indicator
+                optCard.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div class="opt-radio w-5 h-5 rounded-full border-2 border-slate-500 flex items-center justify-center text-xs">
+                            <div class="opt-dot w-2.5 h-2.5 rounded-full bg-indigo-400 hidden"></div>
+                        </div>
+                        <span class="font-medium text-slate-100 text-sm sm:text-base">${escapeHTML(opt)}</span>
+                    </div>
+                    <button type="button" onclick="event.stopPropagation(); speakText('${escapeHTML(opt)}')" title="Listen to option" class="p-2 hover:bg-slate-700/50 rounded-xl text-slate-400 hover:text-indigo-300 transition">
+                        <i class="fa-solid fa-volume-low"></i>
+                    </button>
+                `;
+
+                optionsContainer.appendChild(optCard);
+            });
+
+            // Reset buttons
+            document.getElementById('btn-check').disabled = true;
+            document.getElementById('btn-check').classList.remove('hidden');
+            document.getElementById('btn-next').classList.add('hidden');
+
+            // Auto-speak current question upon loading
+            setTimeout(() => {
+                speakCurrentQuestion();
+            }, 300);
+        }
+
+        function speakCurrentQuestion() {
+            const q = questions[currentIndex];
+            // Read either full sentence or prompt cleanly
+            speakText(q.fullSentence || q.prompt);
+        }
+
+        function selectOption(cardElement, optionValue) {
+            if (isAnswerSubmitted) return;
+
+            // Clear previous selection highlight
+            const cards = document.querySelectorAll('.option-card');
+            cards.forEach(c => {
+                c.classList.remove('selected');
+                c.querySelector('.opt-radio').classList.remove('border-indigo-400');
+                c.querySelector('.opt-dot').classList.add('hidden');
+            });
+
+            // Highlight selected card
+            cardElement.classList.add('selected');
+            cardElement.querySelector('.opt-radio').classList.add('border-indigo-400');
+            cardElement.querySelector('.opt-dot').classList.remove('hidden');
+
+            selectedOption = optionValue;
+            document.getElementById('btn-check').disabled = false;
+        }
+
+        function checkAnswer() {
+            if (!selectedOption || isAnswerSubmitted) return;
+
+            const q = questions[currentIndex];
+
+            if (selectedOption === q.answer) {
+                // CORRECT ANSWER
+                isAnswerSubmitted = true;
+                correctCount++;
+
+                playSoundEffect('correct');
+
+                // Pick random praise
+                const praise = praiseList[Math.floor(Math.random() * praiseList.length)];
+
+                // Show success feedback
+                showFeedback('success', praise, `"${q.fullSentence}" is correct!`);
+
+                // Speak Praise + full sentence
+                speakText(`${praise} ... ${q.fullSentence}`);
+
+                // Switch buttons
+                document.getElementById('btn-check').classList.add('hidden');
+                document.getElementById('btn-next').classList.remove('hidden');
+                document.getElementById('btn-next').focus();
+
+            } else {
+                // WRONG ANSWER
+                attemptCount++;
+                totalMistakes++;
+
+                playSoundEffect('wrong');
+
+                if (attemptCount >= 3) {
+                    // Exceeded max allowed attempts (3 times) -> Reveal answer
+                    isAnswerSubmitted = true;
+
+                    showFeedback('warning', 'Maximum attempts reached!', `The correct answer is: <strong>${escapeHTML(q.answer)}</strong>`);
+
+                    speakText(`The correct answer is ${q.answer}`);
+
+                    // Enable Next button
+                    document.getElementById('btn-check').classList.add('hidden');
+                    document.getElementById('btn-next').classList.remove('hidden');
+                    document.getElementById('btn-next').focus();
+
+                } else {
+                    // Retry allowed
+                    updateAttemptBadge();
+                    showFeedback('error', 'Incorrect answer', `Please try again! Attempt ${attemptCount} of 3.`);
+
+                    // Reset selected choice visual so user picks again
+                    selectedOption = null;
+                    document.getElementById('btn-check').disabled = true;
+
+                    const cards = document.querySelectorAll('.option-card');
+                    cards.forEach(c => {
+                        c.classList.remove('selected');
+                        c.querySelector('.opt-radio').classList.remove('border-indigo-400');
+                        c.querySelector('.opt-dot').classList.add('hidden');
+                    });
+                }
+            }
+        }
+
+        function nextQuestion() {
+            if (currentIndex < questions.length - 1) {
+                currentIndex++;
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function updateAttemptBadge() {
+            const badge = document.getElementById('quiz-attempt-badge');
+            if (badge) {
+                badge.innerText = `Attempt: ${attemptCount + 1} / 3`;
+                if (attemptCount === 2) {
+                    badge.className = "px-2.5 py-0.5 rounded-full bg-rose-950 border border-rose-700 text-rose-300 font-bold";
+                } else {
+                    badge.className = "px-2.5 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300";
+                }
+            }
+        }
+
+        function showFeedback(type, title, message) {
+            const box = document.getElementById('feedback-box');
+            const icon = document.getElementById('feedback-icon');
+            const titleEl = document.getElementById('feedback-title');
+            const msgEl = document.getElementById('feedback-message');
+
+            box.classList.remove('hidden', 'bg-emerald-950/80', 'border-emerald-500/50', 'text-emerald-200',
+                               'bg-rose-950/80', 'border-rose-500/50', 'text-rose-200',
+                               'bg-amber-950/80', 'border-amber-500/50', 'text-amber-200');
+
+            if (type === 'success') {
+                box.classList.add('bg-emerald-950/80', 'border-emerald-500/50', 'text-emerald-200');
+                icon.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
+            } else if (type === 'error') {
+                box.classList.add('bg-rose-950/80', 'border-rose-500/50', 'text-rose-200');
+                icon.innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-400"></i>';
+            } else if (type === 'warning') {
+                box.classList.add('bg-amber-950/80', 'border-amber-500/50', 'text-amber-200');
+                icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-amber-400"></i>';
+            }
+
+            titleEl.innerText = title;
+            msgEl.innerHTML = message;
+        }
+
+        function hideFeedback() {
+            document.getElementById('feedback-box').classList.add('hidden');
+        }
+
+        function showResults() {
+            document.getElementById('view-quiz').classList.add('hidden');
+            document.getElementById('view-results').classList.remove('hidden');
+
+            const total = questions.length;
+            const accuracy = Math.round((correctCount / total) * 100);
+
+            document.getElementById('stat-score').innerText = `${correctCount} / ${total}`;
+            document.getElementById('stat-accuracy').innerText = `${accuracy}%`;
+            document.getElementById('stat-mistakes').innerText = `${totalMistakes}`;
+
+            speakText(`Congratulations! You completed the quiz with an accuracy of ${accuracy} percent.`);
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                // If quiz is visible
+                const quizView = document.getElementById('view-quiz');
+                if (!quizView.classList.contains('hidden')) {
+                    if (isAnswerSubmitted) {
+                        // Enter triggers Next Question
+                        nextQuestion();
+                    } else if (selectedOption) {
+                        // Enter triggers Check Answer
+                        checkAnswer();
+                    }
+                }
+            }
+        });
+
+        // Initialize voice engine on load
+        window.onload = function() {
+            initVoice();
+        };
+    </script>
+</body>
+</html>
